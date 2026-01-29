@@ -7,9 +7,7 @@ import { jwtDecode } from 'jwt-decode';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
-
 import 'leaflet/dist/leaflet.css';
-
 
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -30,9 +28,8 @@ interface Ponto {
 
 interface TokenPayload {
   nome: string;
-  sub: string; 
+  sub: string;
 }
-
 
 const RecenterMap = ({ lat, lng }: { lat: number; lng: number }) => {
   const map = useMap();
@@ -52,6 +49,14 @@ const Dashboard: React.FC = () => {
   const [historico, setHistorico] = useState<Ponto[]>([]);
   const [showErrorOverlay, setShowErrorOverlay] = useState(false);
 
+  // Função para formatar hora garantindo o fuso horário de Brasília
+  const formatarHoraLocal = (dataIso: string) => {
+    return new Date(dataIso).toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Sao_Paulo'
+    });
+  };
 
   const fetchHistorico = useCallback(async (id: string) => {
     try {
@@ -60,16 +65,13 @@ const Dashboard: React.FC = () => {
       setHistorico(pontosValidos);
 
       if (pontosValidos.length > 0) {
-        const ultimaData = new Date(pontosValidos[0].dataHora);
-        setLastRegister(
-          ultimaData.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-        );
+        // CORREÇÃO: Pegando a hora formatada corretamente
+        setLastRegister(formatarHoraLocal(pontosValidos[0].dataHora));
       }
     } catch (error) {
       console.error('Erro ao buscar histórico:', error);
     }
   }, []);
-
 
   useEffect(() => {
     const token = localStorage.getItem('@App:token');
@@ -88,7 +90,6 @@ const Dashboard: React.FC = () => {
     }
   }, [navigate, fetchHistorico]);
 
-
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
 
@@ -101,8 +102,16 @@ const Dashboard: React.FC = () => {
             longitude: pos.coords.longitude,
           });
         },
-        (err) => console.error('Erro GPS:', err),
-        { enableHighAccuracy: true }
+        (err) => {
+          console.error('Erro GPS:', err);
+          // Alerta útil para debug no celular
+          if (err.code === 1) alert("Por favor, autorize a localização no seu navegador/celular.");
+        },
+        { 
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0 
+        }
       );
     }
 
@@ -119,7 +128,7 @@ const Dashboard: React.FC = () => {
 
   const handleRegisterPonto = async () => {
     if (!location) {
-      alert('Aguardando sinal estável do GPS...');
+      alert('Aguardando sinal estável do GPS. Certifique-se de estar usando HTTPS.');
       return;
     }
 
@@ -142,7 +151,7 @@ const Dashboard: React.FC = () => {
 
   const triggerError = () => {
     setShowErrorOverlay(true);
-    setTimeout(() => setShowErrorOverlay(false), 2000);
+    setTimeout(() => setShowErrorOverlay(false), 3000);
   };
 
   return (
@@ -150,7 +159,7 @@ const Dashboard: React.FC = () => {
       <header className={styles.header}>
         <div className={styles.logoArea}>
           <div className={styles.appIcon} />
-          <h1>Elohim - Sistema de Ponto Eletronico</h1>
+          <h1>Elohim - Sistema de Ponto Eletrônico</h1>
         </div>
         <div className={styles.userSection}>
           <div className={styles.userInfo}>
@@ -200,10 +209,7 @@ const Dashboard: React.FC = () => {
                   <li key={index}>
                     <span>
                       {new Date(ponto.dataHora).toLocaleDateString('pt-BR').slice(0, 5)} -{' '}
-                      {new Date(ponto.dataHora).toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {formatarHoraLocal(ponto.dataHora)}
                     </span>
                     <span className={styles.statusIn}>Registrado</span>
                   </li>
