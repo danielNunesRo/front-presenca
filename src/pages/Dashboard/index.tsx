@@ -66,7 +66,7 @@ const Dashboard: React.FC = () => {
       
       const response = await api.get<Ponto[]>(`/pontos/all?usuarioId=${id}`, {
         headers: {
-          Authorization: `Bearer ${token}` // Injeção manual direta
+          Authorization: `Bearer ${token}` 
         }
       });
 
@@ -136,12 +136,13 @@ const Dashboard: React.FC = () => {
         latitude: location.latitude.toString(),
         longitude: location.longitude.toString(),
       }, {
-        headers: { Authorization: `Bearer ${token}` } // Injeção manual para garantir
+        headers: { Authorization: `Bearer ${token}` } 
       });
 
       if (response.data.valido) {
         alert('Ponto registrado com sucesso!');
         fetchHistorico(userId);
+        navigate('/', { replace: true });
       } else {
         triggerError();
       }
@@ -201,7 +202,7 @@ const Dashboard: React.FC = () => {
 
         <div className={styles.bottomGrid}>
           <aside className={styles.historyCard}>
-            <h3><Clock size={18} /> Histórico (Pontos Válidos)</h3>
+            <h3><Clock size={18} /> Histórico de Pontos</h3>
             <ul>
               {historico.slice(0, 8).map((ponto, index) => (
                 <li key={index}>
