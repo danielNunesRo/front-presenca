@@ -141,6 +141,11 @@ const Dashboard: React.FC = () => {
         fetchHistorico(userId);
       } else {
         triggerError();
+        setShowErrorOverlay(true);
+        setTimeout(() => {
+            alert("Não é possível bater o ponto: você está fora do perímetro da escola.");
+        }, 100);
+        setTimeout(() => setShowErrorOverlay(false), 5000);
       }
     } catch (error) {
       triggerError();
@@ -218,7 +223,6 @@ const Dashboard: React.FC = () => {
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <Marker position={[location.latitude, location.longitude]} />
                 <RecenterMap lat={location.latitude} lng={location.longitude} />
-                {/* REMOVIDO DAQUI */}
               </MapContainer>
             ) : (
               <div className={styles.mapLoading}>
@@ -230,7 +234,7 @@ const Dashboard: React.FC = () => {
         </div>
       </main>
 
-      {/* ADICIONADO AQUI: Pop-up de Erro fora do fluxo normal */}
+      
       {showErrorOverlay && (
         <div className={styles.errorOverlay}>
           <div className={styles.errorContent}>
