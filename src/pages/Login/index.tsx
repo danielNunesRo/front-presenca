@@ -1,5 +1,6 @@
-import { useState, FormEvent, useEffect } from 'react'; // Importado useEffect
-import { useNavigate } from 'react-router-dom'; // 1. Importar o hook de navegação
+import { useState, useEffect } from 'react'; 
+import type { FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import { api } from '../../services/api';
 import { jwtDecode } from 'jwt-decode';
 import styles from './styles.module.css';
