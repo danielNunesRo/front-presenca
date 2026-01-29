@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import styles from './styles.module.css';
-import { LogIn, LogOut, Clock, Power, MapPin } from 'lucide-react';
+// Adicionei XCircle aqui
+import { LogIn, LogOut, Clock, Power, MapPin, XCircle } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -59,15 +60,11 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  // Função de busca com Injeção Manual de Header para evitar erros no Quarkus
   const fetchHistorico = useCallback(async (id: string) => {
     try {
       const token = localStorage.getItem('@App:token');
-      
       const response = await api.get<Ponto[]>(`/pontos/all?usuarioId=${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}` 
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       const pontosValidos = response.data.filter((p) => p.valido);
@@ -142,7 +139,6 @@ const Dashboard: React.FC = () => {
       if (response.data.valido) {
         alert('Ponto registrado com sucesso!');
         fetchHistorico(userId);
-        navigate('/', { replace: true });
       } else {
         triggerError();
       }
@@ -153,7 +149,7 @@ const Dashboard: React.FC = () => {
 
   const triggerError = () => {
     setShowErrorOverlay(true);
-    setTimeout(() => setShowErrorOverlay(false), 3000);
+    setTimeout(() => setShowErrorOverlay(false), 4000); // 4 segundos para dar tempo de ler
   };
 
   return (
@@ -222,11 +218,7 @@ const Dashboard: React.FC = () => {
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <Marker position={[location.latitude, location.longitude]} />
                 <RecenterMap lat={location.latitude} lng={location.longitude} />
-                {showErrorOverlay && (
-                  <div className={styles.errorOverlay}>
-                    <p>Não foi possível registrar o ponto, o local está longe da empresa</p>
-                  </div>
-                )}
+                {/* REMOVIDO DAQUI */}
               </MapContainer>
             ) : (
               <div className={styles.mapLoading}>
@@ -237,6 +229,19 @@ const Dashboard: React.FC = () => {
           </section>
         </div>
       </main>
+
+      {/* ADICIONADO AQUI: Pop-up de Erro fora do fluxo normal */}
+      {showErrorOverlay && (
+        <div className={styles.errorOverlay}>
+          <div className={styles.errorContent}>
+            <XCircle size={40} color="#fff" />
+            <div className={styles.errorText}>
+              <strong>Registro não permitido</strong>
+              <p>Não é possível bater o ponto: você está fora do perímetro da escola.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
