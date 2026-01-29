@@ -41,9 +41,8 @@ const RecenterMap = ({ lat, lng }: { lat: number; lng: number }) => {
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const watchIdRef = useRef<number | null>(null); // Ref para gerenciar o ID do GPS
+  const watchIdRef = useRef<number | null>(null);
 
-  // Estados
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
@@ -52,34 +51,37 @@ const Dashboard: React.FC = () => {
   const [historico, setHistorico] = useState<Ponto[]>([]);
   const [showErrorOverlay, setShowErrorOverlay] = useState(false);
 
-  // 1. Função de Formatação de Hora (Correção de Fuso Horário)
   const formatarHoraLocal = (dataIso: string) => {
-    try {
-      return new Date(dataIso).toLocaleTimeString('pt-BR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'America/Sao_Paulo'
-      });
-    } catch (err) {
-      return '--:--';
-    }
+    return new Date(dataIso).toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Sao_Paulo'
+    });
   };
 
+  // Função de busca com Injeção Manual de Header para evitar erros no Quarkus
   const fetchHistorico = useCallback(async (id: string) => {
     try {
-      const response = await api.get<Ponto[]>(`/pontos/all?usuarioId=${id}`);
+      const token = localStorage.getItem('@App:token');
+      
+      const response = await api.get<Ponto[]>(`/pontos/all?usuarioId=${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}` // Injeção manual direta
+        }
+      });
+
       const pontosValidos = response.data.filter((p) => p.valido);
       setHistorico(pontosValidos);
 
       if (pontosValidos.length > 0) {
         setLastRegister(formatarHoraLocal(pontosValidos[0].dataHora));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao buscar histórico:', error);
+      if (error.response?.status === 401) handleLogout();
     }
   }, []);
 
-  // 2. Verificação de Token e Autenticação
   useEffect(() => {
     const token = localStorage.getItem('@App:token');
     if (token) {
@@ -89,80 +91,52 @@ const Dashboard: React.FC = () => {
         setUserId(decoded.sub);
         fetchHistorico(decoded.sub);
       } catch (err) {
-        console.error('Token inválido:', err);
-        navigate('/', { replace: true });
+        handleLogout();
       }
     } else {
       navigate('/', { replace: true });
     }
   }, [navigate, fetchHistorico]);
 
-  // 3. Gerenciamento do Relógio e GPS (Melhorado para Celular)
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
 
     if ('geolocation' in navigator) {
       watchIdRef.current = navigator.geolocation.watchPosition(
         (pos) => {
-          setLocation({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          });
+          setLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
         },
-        (err) => {
-          console.error('Erro GPS:', err);
-          // Alerta específico para ajudar no diagnóstico mobile
-          if (err.code === 1) {
-            console.warn("Usuário negou a localização ou falta HTTPS.");
-          }
-        },
-        { 
-          enableHighAccuracy: true, // Crucial para mobile
-          timeout: 15000, 
-          maximumAge: 0 
-        }
+        (err) => console.error('Erro GPS:', err),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     }
 
     return () => {
       clearInterval(timer);
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-      }
+      if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current);
     };
   }, []);
 
-  // 4. Função de Logout Completa
   const handleLogout = () => {
-    // Para o rastreio de GPS imediatamente
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-    }
-    
-    // Limpa o armazenamento local
-    localStorage.removeItem('@App:token');
-
-    // Limpa os estados da memória (Privacidade)
-    setUserName('');
-    setUserId('');
-    setHistorico([]);
-    setLastRegister('--:--');
-    setLocation(null);
-
-    // Redireciona e impede de voltar para a página de dashboard
+    if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current);
+    localStorage.clear();
+    delete api.defaults.headers.common['Authorization'];
     navigate('/', { replace: true });
   };
 
   const handleRegisterPonto = async () => {
     if (!location) {
-      alert('Aguardando sinal estável do GPS. Certifique-se de estar usando conexão segura (HTTPS).');
+      alert('Aguardando sinal estável do GPS...');
       return;
     }
 
     try {
+      const token = localStorage.getItem('@App:token');
       const response = await api.post('/pontos', {
         latitude: location.latitude.toString(),
         longitude: location.longitude.toString(),
+      }, {
+        headers: { Authorization: `Bearer ${token}` } // Injeção manual para garantir
       });
 
       if (response.data.valido) {
@@ -193,7 +167,7 @@ const Dashboard: React.FC = () => {
             <strong>{userName}</strong>
             <span>{currentTime.toLocaleDateString('pt-BR')}</span>
           </div>
-          <button className={styles.btnLogout} onClick={handleLogout} title="Sair do Sistema">
+          <button className={styles.btnLogout} onClick={handleLogout}>
             <Power size={20} />
           </button>
         </div>
@@ -227,34 +201,23 @@ const Dashboard: React.FC = () => {
 
         <div className={styles.bottomGrid}>
           <aside className={styles.historyCard}>
-            <h3>
-              <Clock size={18} /> Histórico (Pontos Válidos)
-            </h3>
+            <h3><Clock size={18} /> Histórico (Pontos Válidos)</h3>
             <ul>
-              {historico.length > 0 ? (
-                historico.slice(0, 8).map((ponto, index) => (
-                  <li key={index}>
-                    <span>
-                      {new Date(ponto.dataHora).toLocaleDateString('pt-BR').slice(0, 5)} -{' '}
-                      {formatarHoraLocal(ponto.dataHora)}
-                    </span>
-                    <span className={styles.statusIn}>Registrado</span>
-                  </li>
-                ))
-              ) : (
-                <li className={styles.emptyHistory}>Nenhum registro hoje</li>
-              )}
+              {historico.slice(0, 8).map((ponto, index) => (
+                <li key={index}>
+                  <span>
+                    {new Date(ponto.dataHora).toLocaleDateString('pt-BR').slice(0, 5)} - {formatarHoraLocal(ponto.dataHora)}
+                  </span>
+                  <span className={styles.statusIn}>Registrado</span>
+                </li>
+              ))}
+              {historico.length === 0 && <li className={styles.emptyHistory}>Nenhum registro hoje</li>}
             </ul>
           </aside>
 
           <section className={styles.mapWrapper}>
             {location ? (
-              <MapContainer
-                center={[location.latitude, location.longitude]}
-                zoom={16}
-                className={styles.leafletContainer}
-                zoomControl={false}
-              >
+              <MapContainer center={[location.latitude, location.longitude]} zoom={16} className={styles.leafletContainer} zoomControl={false}>
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <Marker position={[location.latitude, location.longitude]} />
                 <RecenterMap lat={location.latitude} lng={location.longitude} />
