@@ -7,10 +7,15 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('@App:token');
 
-
-  if (token && !config.url?.includes('/auth/login')) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.set('Authorization', `Bearer ${token}`);
+    
+    console.log('Header de autorização injetado!');
+  } else {
+    console.log('Nenhum token encontrado no localStorage');
   }
 
   return config;
+}, (error) => {
+  return Promise.reject(error);
 });
