@@ -14,20 +14,20 @@ interface LoginResponse {
 interface DecodedToken {
   nome: string;
   email: string;
-  groups: string;
+  sub: string;
 }
 
 export function Login() {
-  const navigate = useNavigate(); // 2. Inicializar o hook
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // 3. Opcional: Se já estiver logado, pula a tela de login
   useEffect(() => {
     const token = localStorage.getItem('@App:token');
     if (token) {
+      api.defaults.headers.Authorization = `Bearer ${token}`;
       navigate('/dashboard');
     }
   }, [navigate]);
@@ -41,15 +41,17 @@ export function Login() {
       const response = await api.post<LoginResponse>('/auth/login', { email, senha });
       const { accessToken } = response.data;
 
-      // Salva o token
+      // 1. Salva no LocalStorage
       localStorage.setItem('@App:token', accessToken);
-
-      // Decodifica e salva o nome (opcional, já que o dashboard decodifica também)
+      
       const decoded = jwtDecode<DecodedToken>(accessToken);
       localStorage.setItem('@App:userNome', decoded.nome);
 
-      // 4. Redirecionar para o dashboard após o sucesso
-      navigate('/dashboard');
+      // 2. Configura a API para usar o token imediatamente
+      api.defaults.headers.Authorization = `Bearer ${accessToken}`;
+
+      // 3. Redirecionar
+      navigate('/dashboard', { replace: true });
       
     } catch (err: any) {
       setError(err.response?.data?.message || 'Falha na autenticação');
