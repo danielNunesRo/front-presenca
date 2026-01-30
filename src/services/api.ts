@@ -10,7 +10,8 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.set('Authorization', `Bearer ${token}`);
     
-    console.log('Header de autorização injetado!');
+
+    
   } else {
     console.log('Nenhum token encontrado no localStorage');
   }
