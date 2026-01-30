@@ -142,6 +142,7 @@ const Dashboard: React.FC = () => {
       if (response.data.valido) {
         alert('Ponto registrado com sucesso!');
         fetchHistorico(userId);
+        window.location.reload();
       } else {
         triggerError();
         setShowErrorOverlay(true);
@@ -204,7 +205,6 @@ const Dashboard: React.FC = () => {
       </header>
 
       <main className={styles.mainContent}>
-        {/* Espaço para Painel Admin se necessário no futuro */}
         
         <section className={styles.topCards}>
           <div className={styles.card}>
