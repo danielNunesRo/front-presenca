@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Adicionado Link
 import { api } from '../../services/api';
 import styles from './styles.module.css';
-// Adicionei XCircle aqui
-import { LogIn, LogOut, Clock, Power, MapPin, XCircle } from 'lucide-react';
+import { LogIn, LogOut, Clock, Power, MapPin, XCircle, Menu, X } from 'lucide-react'; // Adicionado Menu e X
 import { jwtDecode } from 'jwt-decode';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -30,6 +29,7 @@ interface Ponto {
 interface TokenPayload {
   nome: string;
   sub: string;
+  groups?: string; // Adicionado para suportar ADMIN
 }
 
 const RecenterMap = ({ lat, lng }: { lat: number; lng: number }) => {
@@ -47,6 +47,8 @@ const Dashboard: React.FC = () => {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false); // Estado para controle de Admin
+  const [menuOpen, setMenuOpen] = useState(false); // Estado para o menu hambúrguer
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastRegister, setLastRegister] = useState<string>('--:--');
   const [historico, setHistorico] = useState<Ponto[]>([]);
@@ -86,6 +88,7 @@ const Dashboard: React.FC = () => {
         const decoded = jwtDecode<TokenPayload>(token);
         setUserName(decoded.nome);
         setUserId(decoded.sub);
+        setIsAdmin(decoded.groups === 'ADMIN'); // Validação do ADMIN
         fetchHistorico(decoded.sub);
       } catch (err) {
         handleLogout();
@@ -154,20 +157,44 @@ const Dashboard: React.FC = () => {
 
   const triggerError = () => {
     setShowErrorOverlay(true);
-    setTimeout(() => setShowErrorOverlay(false), 4000); // 4 segundos para dar tempo de ler
+    setTimeout(() => setShowErrorOverlay(false), 4000);
   };
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.logoArea}>
+          {/* Menu Hambúrguer para ADMIN */}
+          {isAdmin && (
+            <div className={styles.adminMenuContainer}>
+              <button 
+                className={styles.btnHamburger} 
+                onClick={() => setMenuOpen(!menuOpen)}
+                title="Menu Administrador"
+              >
+                {menuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+              
+              {menuOpen && (
+                <div className={styles.adminDropdown}>
+                  <Link to="/relatorios" onClick={() => setMenuOpen(false)}>RELATÓRIOS</Link>
+                  <Link to="/outro-a-definir" onClick={() => setMenuOpen(false)}>OUTRO A DEFINIR</Link>
+                </div>
+              )}
+            </div>
+          )}
           <div className={styles.appIcon} />
           <h1>Elohim - Sistema de Ponto Eletrônico</h1>
         </div>
+
         <div className={styles.userSection}>
           <div className={styles.userInfo}>
             <strong>{userName}</strong>
-            <span>{currentTime.toLocaleDateString('pt-BR')}</span>
+            <div className={styles.userLinks}>
+              <span>{currentTime.toLocaleDateString('pt-BR')}</span>
+              <span className={styles.separator}>•</span>
+              <Link to="/alterar-senha" className={styles.changePasswordLink}>Altere sua senha</Link>
+            </div>
           </div>
           <button className={styles.btnLogout} onClick={handleLogout}>
             <Power size={20} />
@@ -234,7 +261,6 @@ const Dashboard: React.FC = () => {
         </div>
       </main>
 
-      
       {showErrorOverlay && (
         <div className={styles.errorOverlay}>
           <div className={styles.errorContent}>
