@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Adicionado Link
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../services/api';
 import styles from './styles.module.css';
-import { LogIn, LogOut, Clock, Power, MapPin, XCircle, Menu, X } from 'lucide-react'; // Adicionado Menu e X
+import { LogIn, LogOut, Clock, Power, MapPin, XCircle, Menu, X } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -29,7 +29,7 @@ interface Ponto {
 interface TokenPayload {
   nome: string;
   sub: string;
-  groups?: string; // Adicionado para suportar ADMIN
+  groups?: string; // Captura o grupo do JWT
 }
 
 const RecenterMap = ({ lat, lng }: { lat: number; lng: number }) => {
@@ -47,8 +47,8 @@ const Dashboard: React.FC = () => {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false); // Estado para controle de Admin
-  const [menuOpen, setMenuOpen] = useState(false); // Estado para o menu hambúrguer
+  const [isAdmin, setIsAdmin] = useState(false); // Estado para checar ADMIN
+  const [menuOpen, setMenuOpen] = useState(false); // Estado do menu hambúrguer
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastRegister, setLastRegister] = useState<string>('--:--');
   const [historico, setHistorico] = useState<Ponto[]>([]);
@@ -88,7 +88,8 @@ const Dashboard: React.FC = () => {
         const decoded = jwtDecode<TokenPayload>(token);
         setUserName(decoded.nome);
         setUserId(decoded.sub);
-        setIsAdmin(decoded.groups === 'ADMIN'); // Validação do ADMIN
+        // Verifica se o usuário pertence ao grupo ADMIN
+        setIsAdmin(decoded.groups === 'ADMIN'); 
         fetchHistorico(decoded.sub);
       } catch (err) {
         handleLogout();
@@ -164,19 +165,19 @@ const Dashboard: React.FC = () => {
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.logoArea}>
-          {/* Menu Hambúrguer para ADMIN */}
+          {/* Menu Hambúrguer Exclusivo ADMIN */}
           {isAdmin && (
             <div className={styles.adminMenuContainer}>
               <button 
                 className={styles.btnHamburger} 
                 onClick={() => setMenuOpen(!menuOpen)}
-                title="Menu Administrador"
               >
-                {menuOpen ? <X size={24} /> : <Menu size={24} />}
+                {menuOpen ? <X size={26} /> : <Menu size={26} />}
               </button>
               
               {menuOpen && (
                 <div className={styles.adminDropdown}>
+                  <div className={styles.dropdownHeader}>PAINEL ADMIN</div>
                   <Link to="/relatorios" onClick={() => setMenuOpen(false)}>RELATÓRIOS</Link>
                   <Link to="/outro-a-definir" onClick={() => setMenuOpen(false)}>OUTRO A DEFINIR</Link>
                 </div>
@@ -192,8 +193,10 @@ const Dashboard: React.FC = () => {
             <strong>{userName}</strong>
             <div className={styles.userLinks}>
               <span>{currentTime.toLocaleDateString('pt-BR')}</span>
-              <span className={styles.separator}>•</span>
-              <Link to="/alterar-senha" className={styles.changePasswordLink}>Altere sua senha</Link>
+              <span className={styles.separator}>|</span>
+              <Link to="/alterar-senha" className={styles.changePasswordLink}>
+                Altere sua senha
+              </Link>
             </div>
           </div>
           <button className={styles.btnLogout} onClick={handleLogout}>
@@ -203,6 +206,8 @@ const Dashboard: React.FC = () => {
       </header>
 
       <main className={styles.mainContent}>
+        {/* Espaço para Painel Admin se necessário no futuro */}
+        
         <section className={styles.topCards}>
           <div className={styles.card}>
             <label>Horário Atual</label>

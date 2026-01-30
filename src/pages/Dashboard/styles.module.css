@@ -444,3 +444,67 @@
 .changePasswordLink:hover {
   text-decoration: underline;
 }
+
+.adminMenuContainer {
+  position: relative;
+  margin-right: 12px;
+}
+
+.btnHamburger {
+  background: none;
+  border: none;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.btnHamburger:hover {
+  background: #f0f0f0;
+}
+
+.adminDropdown {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  min-width: 200px;
+  z-index: 1000;
+  overflow: hidden;
+  border: 1px solid #eee;
+  animation: slideIn 0.2s ease-out;
+}
+
+.dropdownHeader {
+  background: #f8f9fa;
+  padding: 10px 15px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #999;
+  letter-spacing: 1px;
+}
+
+.adminDropdown a {
+  display: block;
+  padding: 12px 15px;
+  color: #333;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.adminDropdown a:hover {
+  background: #007bff;
+  color: white;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
