@@ -142,7 +142,7 @@ const Dashboard: React.FC = () => {
       if (response.data.valido) {
         alert('Ponto registrado com sucesso!');
         fetchHistorico(userId);
-        window.location.reload();
+        navigate('/', { replace: true });
       } else {
         triggerError();
         setShowErrorOverlay(true);
