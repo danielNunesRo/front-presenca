@@ -142,7 +142,7 @@ const Dashboard: React.FC = () => {
       if (response.data.valido) {
         alert('Ponto registrado com sucesso!');
         fetchHistorico(userId);
-        navigate('/', { replace: true });
+        navigate('https://front-presenca.vercel.app/', { replace: true });
       } else {
         triggerError();
         setShowErrorOverlay(true);
