@@ -90,6 +90,9 @@ const Dashboard: React.FC = () => {
         setUserId(decoded.sub);
         setIsAdmin(decoded.groups === "ADMIN"); 
         fetchHistorico(decoded.sub);
+        console.log("Objeto decodificado do Token:", decoded);
+        console.log("O campo groups existe?", decoded.groups);
+        console.log("É igual a ADMIN?", decoded.groups === 'ADMIN');
       } catch (err) {
         handleLogout();
       }
