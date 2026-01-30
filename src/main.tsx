@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import { Navigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { StrictMode } from 'react';
+import { ChangePassword } from './pages/ChangePassword/index.tsx';
 
 const PrivateRoute = ({ children }: { children: ReactNode }) => {
   const token = localStorage.getItem('@App:token');
@@ -21,6 +22,7 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard/></PrivateRoute>} />
+        <Route path="/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

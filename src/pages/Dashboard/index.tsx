@@ -90,9 +90,6 @@ const Dashboard: React.FC = () => {
         setUserId(decoded.sub);
         setIsAdmin(decoded.groups === "ADMIN"); 
         fetchHistorico(decoded.sub);
-        console.log("Objeto decodificado do Token:", decoded);
-        console.log("O campo groups existe?", decoded.groups);
-        console.log("É igual a ADMIN?", decoded.groups === 'ADMIN');
       } catch (err) {
         handleLogout();
       }
@@ -167,7 +164,6 @@ const Dashboard: React.FC = () => {
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.logoArea}>
-          {/* Menu Hambúrguer Exclusivo ADMIN */}
           {isAdmin && (
             <div className={styles.adminMenuContainer}>
               <button 
@@ -196,7 +192,7 @@ const Dashboard: React.FC = () => {
             <div className={styles.userLinks}>
               <span>{currentTime.toLocaleDateString('pt-BR')}</span>
               <span className={styles.separator}>|</span>
-              <Link to="/alterar-senha" className={styles.changePasswordLink}>
+              <Link to="/change-password" className={styles.changePasswordLink}>
                 Altere sua senha
               </Link>
             </div>
