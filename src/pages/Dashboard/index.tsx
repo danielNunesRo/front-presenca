@@ -29,7 +29,7 @@ interface Ponto {
 interface TokenPayload {
   nome: string;
   sub: string;
-  groups?: string; // Captura o grupo do JWT
+  groups?: string; 
 }
 
 const RecenterMap = ({ lat, lng }: { lat: number; lng: number }) => {
@@ -47,8 +47,8 @@ const Dashboard: React.FC = () => {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false); // Estado para checar ADMIN
-  const [menuOpen, setMenuOpen] = useState(false); // Estado do menu hambúrguer
+  const [isAdmin, setIsAdmin] = useState(false); 
+  const [menuOpen, setMenuOpen] = useState(false); 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [lastRegister, setLastRegister] = useState<string>('--:--');
   const [historico, setHistorico] = useState<Ponto[]>([]);
@@ -88,8 +88,7 @@ const Dashboard: React.FC = () => {
         const decoded = jwtDecode<TokenPayload>(token);
         setUserName(decoded.nome);
         setUserId(decoded.sub);
-        // Verifica se o usuário pertence ao grupo ADMIN
-        setIsAdmin(decoded.groups === 'ADMIN'); 
+        setIsAdmin(decoded.groups === "ADMIN"); 
         fetchHistorico(decoded.sub);
       } catch (err) {
         handleLogout();
