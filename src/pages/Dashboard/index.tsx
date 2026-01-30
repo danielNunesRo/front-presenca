@@ -86,6 +86,7 @@ const Dashboard: React.FC = () => {
     if (token) {
       try {
         const decoded = jwtDecode<TokenPayload>(token);
+        
         setUserName(decoded.nome);
         setUserId(decoded.sub);
         setIsAdmin(decoded.groups === "ADMIN"); 
