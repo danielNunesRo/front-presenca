@@ -81,6 +81,17 @@ const Dashboard: React.FC = () => {
     }
   }, []);
 
+  // Efeito para Auto-Reload (Evita bug de deslogado/aba aberta)
+  // Define 30 minutos (1800000 ms) para atualizar a página sozinho
+  useEffect(() => {
+    const timeToReload = 30 * 60 * 1000; 
+    const reloadTimer = setTimeout(() => {
+      window.location.reload();
+    }, timeToReload);
+
+    return () => clearTimeout(reloadTimer);
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem('@App:token');
     if (token) {
@@ -143,7 +154,8 @@ const Dashboard: React.FC = () => {
       if (response.data.valido) {
         alert('Ponto registrado com sucesso!');
         fetchHistorico(userId);
-        navigate('https://front-presenca.vercel.app/', { replace: true });
+        // CORREÇÃO: Para redirecionar para URL externa ou resetar a rota sem concatenar
+        window.location.href = 'https://front-presenca.vercel.app/';
       } else {
         triggerError();
         setShowErrorOverlay(true);
