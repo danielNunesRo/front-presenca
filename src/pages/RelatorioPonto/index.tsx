@@ -86,7 +86,7 @@ export default function RelatorioPonto() {
     if (!usuarioSelecionado) return;
 
     const response = await api.get(
-      `/pontos/relatorio?usuarioId=${usuarioSelecionado.id}`,
+      `/pontos/admin/relatorio?usuarioId=${usuarioSelecionado.id}`,
       {
         headers: { Authorization: `Bearer ${token}` },
         responseType: "blob"
