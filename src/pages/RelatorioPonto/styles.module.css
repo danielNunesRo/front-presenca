@@ -1,0 +1,130 @@
+.container {
+  display: flex;
+  height: 100vh;
+  background: #f5f7fb;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* LISTA DE USUARIOS */
+
+.listaUsuarios {
+  width: 320px;
+  background: white;
+  border-right: 1px solid #e3e6ef;
+  padding: 25px;
+  overflow-y: auto;
+}
+
+.listaUsuarios h2 {
+  color: #0a3d62;
+  margin-bottom: 20px;
+}
+
+.usuarioCard {
+  background: #f9fbff;
+  border: 1px solid #e4e8f3;
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.usuarioCard:hover {
+  background: #eef3ff;
+  border-color: #0a3d62;
+}
+
+.usuarioNome {
+  font-weight: bold;
+  color: #0a3d62;
+}
+
+.usuarioEmail {
+  font-size: 13px;
+  color: #777;
+}
+
+/* PAINEL DIREITO */
+
+.painel {
+  flex: 1;
+  background: white;
+  padding: 40px;
+  transform: translateX(100%);
+  transition: transform 0.4s ease;
+}
+
+.aberto {
+  transform: translateX(0);
+}
+
+/* HEADER */
+
+.headerPainel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.headerPainel h2 {
+  color: #0a3d62;
+}
+
+.emoji {
+  font-size: 40px;
+}
+
+/* SEÇÕES */
+
+.secao h3 {
+  margin-bottom: 15px;
+  color: #0a3d62;
+}
+
+/* LISTA DE PONTOS */
+
+.listaPontos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pontoItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid #e5e8f1;
+  border-radius: 6px;
+  background: #fafcff;
+}
+
+.valido {
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.invalido {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+/* BOTAO */
+
+.botaoDownload {
+  margin-top: 30px;
+  background: #0a3d62;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 250px;
+  transition: 0.2s;
+}
+
+.botaoDownload:hover {
+  background: #082b45;
+}

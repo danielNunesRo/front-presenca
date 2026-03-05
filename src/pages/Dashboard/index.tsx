@@ -81,8 +81,7 @@ const Dashboard: React.FC = () => {
     }
   }, []);
 
-  // Efeito para Auto-Reload (Evita bug de deslogado/aba aberta)
-  // Define 30 minutos (1800000 ms) para atualizar a página sozinho
+
   useEffect(() => {
     const timeToReload = 30 * 60 * 1000; 
     const reloadTimer = setTimeout(() => {
