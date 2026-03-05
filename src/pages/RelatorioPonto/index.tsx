@@ -30,44 +30,25 @@ export default function Relatorio() {
   }, []);
 
   async function carregarUsuarios() {
-    try {
+    const response = await api.get<Usuario[]>("/users", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-      const response = await api.get<Usuario[]>("/users", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      setUsuarios(response.data);
-
-    } catch (error) {
-      console.error("Erro ao carregar usuários", error);
-    }
+    setUsuarios(response.data);
   }
 
   async function selecionarUsuario(user: Usuario) {
 
-    try {
+    setUsuarioSelecionado(user);
 
-      setUsuarioSelecionado(user);
+    const response = await api.get<Ponto[]>(`/pontos/all?usuarioId=${user.id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-      const response = await api.get<Ponto[]>(
-        `/pontos/all?usuarioId=${user.id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+    const ultimos10 = response.data.slice(-10).reverse();
 
-      const pontosOrdenados = response.data.sort(
-        (a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
-      );
-
-      const ultimos10 = pontosOrdenados.slice(-10).reverse();
-
-      setPontos(ultimos10);
-      setPainelAberto(true);
-
-    } catch (error) {
-      console.error("Erro ao carregar pontos", error);
-    }
+    setPontos(ultimos10);
+    setPainelAberto(true);
   }
 
   function calcularEmoji() {
@@ -79,15 +60,9 @@ export default function Relatorio() {
     pontos.forEach((p) => {
 
       const data = new Date(p.dataHora);
+      const dia = data.toISOString().split("T")[0];
 
-      const dia =
-        data.getFullYear() +
-        "-" +
-        (data.getMonth() + 1) +
-        "-" +
-        data.getDate();
-
-      if (atrasos[dia] === undefined) {
+      if (!(dia in atrasos)) {
 
         const hora = data.getHours();
         const minuto = data.getMinutes();
@@ -97,7 +72,9 @@ export default function Relatorio() {
         } else {
           atrasos[dia] = false;
         }
+
       }
+
     });
 
     const totalAtrasos = Object.values(atrasos).filter(v => v).length;
@@ -115,17 +92,21 @@ export default function Relatorio() {
     try {
 
       const response = await api.get(
-        `/pontos/relatorio?usuarioId=${usuarioSelecionado.id}`,
+        `/pontos/admin/relatorio?usuarioId=${usuarioSelecionado.id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob"
         }
       );
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blob = new Blob(
+        [response.data],
+        { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+      );
+
+      const url = window.URL.createObjectURL(blob);
 
       const link = document.createElement("a");
-
       link.href = url;
       link.download = `relatorio-${usuarioSelecionado.nome}.xlsx`;
 
@@ -136,8 +117,9 @@ export default function Relatorio() {
       window.URL.revokeObjectURL(url);
 
     } catch (error) {
-      console.error("Erro ao baixar relatório", error);
+      console.error("Erro ao baixar relatório:", error);
     }
+
   }
 
   return (
@@ -174,9 +156,8 @@ export default function Relatorio() {
                 {pontos.map((p, i) => (
                   <div key={i} className={styles.pontoItem}>
                     <div>
-                      {new Date(p.dataHora).toLocaleString("pt-BR")}
+                      {new Date(p.dataHora).toLocaleString()}
                     </div>
-
                     <div className={p.valido ? styles.valido : styles.invalido}>
                       {p.valido ? "Válido" : "Inválido"}
                     </div>
