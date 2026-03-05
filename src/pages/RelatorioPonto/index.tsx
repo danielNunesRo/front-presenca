@@ -16,7 +16,7 @@ interface Ponto {
   motivo: string;
 }
 
-export default function RelatorioPonto() {
+export default function Relatorio() {
 
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<Usuario | null>(null);
@@ -86,7 +86,7 @@ export default function RelatorioPonto() {
     if (!usuarioSelecionado) return;
 
     const response = await api.get(
-      `/pontos/admin/relatorio?usuarioId=${usuarioSelecionado.id}`,
+      `/pontos/relatorio?usuarioId=${usuarioSelecionado.id}`,
       {
         headers: { Authorization: `Bearer ${token}` },
         responseType: "blob"
